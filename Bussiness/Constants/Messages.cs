@@ -14,5 +14,8 @@ namespace Bussiness.Constants
         public static string ProductById = "Product taked by Id";
         public static string ProductsListedByUnitPrice = "Products are listed by unit price";
         public static string ProductDetailsListed = "Product details are listed";
+        public static string ProductCategoryLimitExceded= "Category limit is exceded ! So, you cannot add this product";
+        public static string ProductWithThisNameAlreadyExist = "Product with this name already exist";
+        public static string CategoryLimitExceded = "There must be 15 Category ! Sorry, you cannot add this product.";
     }
 }

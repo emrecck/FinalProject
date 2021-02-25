@@ -3,6 +3,7 @@ using Bussiness.Constants;
 using Bussiness.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation;
+using Core.Utilities.Business;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -18,20 +19,51 @@ namespace Bussiness.Concrete
     public class ProductManager : IProductService
     {
         IProductDal _productDal;
-        public ProductManager(IProductDal productDal)
+        ICategoryService _categoryService;
+        public ProductManager(IProductDal productDal,ICategoryService categoryService)
         {
             _productDal = productDal;
+            _categoryService = categoryService;
         }
 
         [ValidationAspect(typeof(ProductValidator))]
         public IResult Add(Product product)
         {
-            ValidationTool.Validate(new ProductValidator(),product);
-            //return new ErrorResult(Messages.ProductNameInvalid);
+            var result = BusinessRules.Run(CheckCategoryCount(product.CategoryId), CheckProductName(product.ProductName), CheckCategoryLimit());
+            if (result != null)
+            {
+                return result;
+            }
             _productDal.Add(product);
             return new SuccessResult(Messages.ProductAdded);
         }
-
+        private IResult CheckCategoryCount(int categoryid)
+        {
+            var result = _productDal.GetAll(p => p.CategoryId == categoryid).Count;
+            if (result >= 10 )
+            {
+                return new ErrorResult(Messages.ProductCategoryLimitExceded);
+            }
+            return new SuccessResult();
+        }
+        private IResult CheckProductName(string name)
+        {
+            var result = _productDal.GetAll(p => p.ProductName == name).Any();
+            if (result)
+            {
+                return new ErrorResult(Messages.ProductWithThisNameAlreadyExist);
+            }
+            return new SuccessResult();
+        }
+        private IResult CheckCategoryLimit()
+        {
+            var result = _categoryService.GetAll();
+            if (result.Data.Count <= 15 )
+            {
+                return new SuccessResult();
+            }
+            return new ErrorResult(Messages.CategoryLimitExceded);
+        }
         public IDataResult<List<Product>> GetAll()
         {
             if (DateTime.Now.Hour == 23)
