@@ -2,6 +2,7 @@
 using Bussiness.BusinessAspect.Autofac;
 using Bussiness.Constants;
 using Bussiness.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Caching;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation;
 using Core.Utilities.Business;
@@ -28,6 +29,7 @@ namespace Bussiness.Concrete
         }
         [SecuredOperation("product.add,admin")]
         [ValidationAspect(typeof(ProductValidator))]
+        [CacheRemoveAspect("IProductService.Get")]
         public IResult Add(Product product)
         {
             var result = BusinessRules.Run(CheckCategoryCount(product.CategoryId), CheckProductName(product.ProductName), CheckCategoryLimit());
@@ -65,6 +67,7 @@ namespace Bussiness.Concrete
             }
             return new ErrorResult(Messages.CategoryLimitExceded);
         }
+        [CacheAspect]
         public IDataResult<List<Product>> GetAll()
         {
             if (DateTime.Now.Hour == 23)
@@ -82,7 +85,7 @@ namespace Bussiness.Concrete
             }
             return new SuccessDataResult<List<Product>>(_productDal.GetAll(p => p.CategoryId == id), Messages.ProductsListedByCategory);
         }
-
+        [CacheAspect]
         public IDataResult<Product> GetById(int produtcId)
         {
             if (DateTime.Now.Hour == 22)
@@ -108,6 +111,16 @@ namespace Bussiness.Concrete
                 return new ErrorDataResult<List<ProductDetailDto>>(Messages.MaintenanceTime);
             }
             return new SuccessDataResult<List<ProductDetailDto>>(_productDal.GetProductDetails(), Messages.ProductDetailsListed);
+        }
+
+        public IResult Update(Product product)
+        {
+            throw new NotImplementedException();
+        }
+        [TransactionScopeAspect]
+        public IResult AddTransactionalTest(Product product)
+        {
+            throw new NotImplementedException();
         }
     }
 }
