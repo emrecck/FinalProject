@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Castle.DynamicProxy;
+using Core.Utilities.Interceptors;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Transactions;
 
 namespace Core.Aspects.Autofac.Transaction
 {
